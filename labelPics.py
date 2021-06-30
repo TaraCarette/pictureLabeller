@@ -124,6 +124,10 @@ def main():
     # extract all relevant picture names
     picList = findPictures(folderName)
 
+    if len(picList) == 0:
+        print("There are no recognized picture types in " + folderName)
+        quit()
+
     # put up labelling gui
     masterLabel = initiateTk(propFull, propFull)
 
