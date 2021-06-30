@@ -84,17 +84,12 @@ def callbackOld(event, eEnterName):
 
 def protocolExit(master):
     master.destroy()
-    print("here")
     quit()
 
-def callbackExit(master):
-    print("Should register")
+def protocolLoopExit(master):
     global exit
     exit = True
     waitVar.set(1)
-    # master.destroy()
-    print("here!")
-    # quit()
 
 # set trigger to loop to next picture
 def nextPic():
@@ -148,7 +143,7 @@ def main():
     lOldName = Label(masterLabel, text=picList[0])
     lOldName.pack()
 
-    eEnterName = Entry(masterLabel)
+    eEnterName = Entry(masterLabel, width=75, font=("Calibri 14"))
     eEnterName.focus_set()
     eEnterName.pack()
 
@@ -158,20 +153,14 @@ def main():
     # bind events in gui
     masterLabel.bind('<Return>', lambda event: callbackEnter(event, eEnterName))
     masterLabel.bind('<Up>', lambda event: callbackOld(event, eEnterName))
-    # masterLabel.bind('WM_DELETE_WINDOW', lambda event: callbackExit(event, masterLabel))
-    masterLabel.protocol("WM_DELETE_WINDOW", lambda: callbackExit(masterLabel))
+    masterLabel.protocol("WM_DELETE_WINDOW", lambda: protocolLoopExit(masterLabel))
     
-
-    # # able to exit gracefully
-    # masterLabel.protocol("WM_DELETE_WINDOW", lambda: callbackExit(masterLabel))
-
-
     # go through the rest of the pictures
     for p in picList[1:]:
-        print(p)
         bSkip.wait_variable(waitVar)
+
+        # if exit flag triggered last loop, leave
         if exit:
-            print("exit I hope")
             break
         picName = p # needs to be after the wait
 
@@ -182,15 +171,16 @@ def main():
         newImg = updatePic(folderName + "/" + p)
         lPic.configure(image=newImg)
 
-    print("do I ever get here?")
     # when out of pictures close application
     if not exit:
         bSkip.wait_variable(waitVar)
     masterLabel.destroy()
-    print("do I ever get here? 2")
 
     # run program
-    mainloop()
+    try:
+        mainloop()
+    except AttributeError as e:
+        print("Gracefully ended early")
 
 
 if __name__ == '__main__':
